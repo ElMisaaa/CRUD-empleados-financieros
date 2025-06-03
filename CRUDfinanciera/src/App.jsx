@@ -1,131 +1,89 @@
-import { Button, Container, Typography, Stack, Modal, Box } from "@mui/material";
-
-import StudentsTable from "./components/StudentsTable";
-import StudentForm from "./components/StudentForm";
-import ViewStudentModal from "./components/ViewStudentsModal"; 
+import { Button, Container, Typography, Stack } from "@mui/material";
 import { useState } from "react";
 
-
-
+import EmployeesTable from "./components/EmployeesTable";
+import EmployeeForm from "./components/EmployeeForm";
+import ViewEmployeeModal from "./components/ViewEmployeeModal";
 
 function App() {
+  const [employees, setEmployees] = useState([]);
+  const [openForm, setOpenForm] = useState(false);
+  const [openView, setOpenView] = useState(false);
+  const [viewingEmployee, setViewingEmployee] = useState(null);
+  const [editingEmployee, setEditingEmployee] = useState(null);
 
-  const [openForm, setOpenForm]= useState(false);
-  const [openView, setOpenView] = useState(false);  
-  const [students, setStudents]= useState([])
-  const [viewingStudent, setViewingStudent] = useState(null);
-  const [editingStudent, setEditingStudent] = useState(null);
-
-  const handleOpenForm =() =>{
+  const handleOpenForm = () => {
+    setEditingEmployee(null);
     setOpenForm(true);
-    setEditingStudent(null);
   };
 
-  const handleCloseForm =() => setOpenForm(false);
-
+  const handleCloseForm = () => setOpenForm(false);
   const handleCloseView = () => {
-    setViewingStudent(null);
+    setViewingEmployee(null);
     setOpenView(false);
-  }
+  };
 
-
-  const addStudent = (student) => {
-    setStudents ([...students, {id: Date.now(), ...student}]);
-    handleCloseForm ();
-  }
-
-  const updateStudent = (updatedStudent) => {
-    setStudents(
-      students.map((student) => 
-        student.id === updatedStudent.id ? updatedStudent : student
-      )
-    );
+  const addEmployee = (employee) => {
+    const newId = employees.length > 0
+      ? Math.max(...employees.map((e) => e.id)) + 1
+      : 1;
+    setEmployees([...employees, { id: newId, ...employee }]);
     handleCloseForm();
   };
 
+  const updateEmployee = (updatedEmployee) => {
+    setEmployees(employees.map((e) =>
+      e.id === updatedEmployee.id ? updatedEmployee : e
+    ));
+    handleCloseForm();
+  };
 
-  const deleteStudent = (id) => {
-    setStudents(students.filter((student) => student.id !== id));
-  }
-
-  const editStudent = (student) => {
-    setEditingStudent(student);
-    setOpenForm(true);
-  }
-
-  const handleOpenView = (student) => {
-    setViewingStudent(student);
-    setOpenView(true);
-  }
-
+  const deleteEmployee = (id) => {
+    setEmployees(employees.filter((e) => e.id !== id));
+  };
 
   return (
-    <Container maxWidth="md" sx={{mt:4}}>
-
-      <Stack>
-      <Typography variant="h3" align="center" gutterBottom>
-        Gestión de Alumnos UPANA
-      </Typography>
-
-      <Button variant="contained" color="primary" width="false" sx={{mb:3}} 
-      onClick={handleOpenForm}>
-        Agregar Alumno (+)
-      </Button>
-
-
-      <StudentsTable
-      students = {students}
-      deleteStudent = {deleteStudent}
-      viewStudent = {handleOpenView}
-      editStudent={editStudent}
-      />
-
-      <Modal open={openForm} onClose={handleCloseForm}>
-        <Box 
-          sx={{
-            position:"absolute",
-            top:"50%",
-            left:"50%",
-            transform: "translate(-50%, -50%)",
-            width: 400,
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 4,
-              
-          }}>
-            <StudentForm 
-            handleClose={handleCloseForm}
-            addStudent= {addStudent}
-            editingStudent={editingStudent}
-            updateStudent={updateStudent}
-            />
-            
-        </Box>
-      </Modal>
-
-      <Modal open={openView} onClose={handleCloseView}> 
-        <Box 
-          sx={{
-            position:"absolute",
-            top:"50%",
-            left:"50%",
-            transform: "translate(-50%, -50%)",
-            width: 400,
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 4,
-          }}>
-            <ViewStudentModal student={viewingStudent}/>
-        </Box>
-      </Modal>
-      
+    <Container sx={{ mt: 4 }}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        spacing={2}
+        sx={{ mb: 2 }}
+      >
+        <Typography variant="h4">Gestión de Empleados</Typography>
+        <Button variant="text" onClick={handleOpenForm}>
+          Agregar Empleado
+        </Button>
       </Stack>
 
-    </Container>
+      <EmployeesTable
+        employees={employees}
+        onView={(e) => {
+          setViewingEmployee(e);
+          setOpenView(true);
+        }}
+        onEdit={(e) => {
+          setEditingEmployee(e);
+          setOpenForm(true);
+        }}
+        onDelete={deleteEmployee}
+      />
 
+      <EmployeeForm
+        open={openForm}
+        onClose={handleCloseForm}
+        onSubmit={editingEmployee ? updateEmployee : addEmployee}
+        initialData={editingEmployee}
+      />
+
+      <ViewEmployeeModal
+        open={openView}
+        onClose={handleCloseView}
+        employee={viewingEmployee}
+      />
+    </Container>
   );
 }
 
-export default App;
+export default App;
